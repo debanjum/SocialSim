@@ -5,22 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from random import randrange, shuffle
 
-# Setup Initial Agent State
-N = 100                             # Sample Size
-klf = 1                             # Land Worked on to Food Produced Ratio
-Fsurvive = 2                        # Food to consume for survival
-A0 = np.random.randint(100,size=N)  # Initial Food Allocation(Random)
-A1 = np.random.randint(100,size=N)  # Initial Land Allocation(Random)
-
-# Actions
-#Fc  = map(lambda a: randrange(0,a), filter(lambda a: a!=0, A0))    # Food for Consumption
-#Flo = map(lambda a: randrange(0,a), filter(lambda a: a!=0, Fc))    # Food to Lease Out
-#Fto = map(lambda a: randrange(0,a), filter(lambda a: a!=0, Flo))   # Food to Trade Out 
-
-#Lw  = map(lambda a: randrange(0,a), filter(lambda a: a!=0, A1))    # Land for Work
-#Llo = map(lambda a: randrange(0,a), filter(lambda a: a!=0, Lw))    # Land to Lease Out
-#Lto = map(lambda a: randrange(0,a), filter(lambda a: a!=0, Llo))   # Land to Trade Out
-
+# Bid for trading and leasing food, land
 def Bid(A0, A1):
     if (randrange(0,1)):
         Flo  = [ randrange(0,a) if a>0 else 0 for a in A0 ]                     # Food to Lease Out    
@@ -106,7 +91,7 @@ def DealsUpdate(A0, A1, Flo, Llo, Fto, Lto, Fli, Lli, Fti, Lti, Trades, Leases):
 
 def StateUpdate(C0, C1, Fc, Lw):
     for i in xrange(len(C0)):
-        if Fc[i] > Fsurvive:
+        if Fc[i] > kfs:
             C0[i] = C0[i] - Fc[i] + klf*Lw[i]
         else:
             C0[i] = 0
@@ -116,30 +101,40 @@ def StateUpdate(C0, C1, Fc, Lw):
 
 
 # Run Simulation
-while(1):
-    Flo, Llo, Fto, Lto, Fli, Lli, Fti, Lti = Bid(A0,A1)
-    Leases = Deals(Flo, Llo, Fli, Lli)
-    Trades = Deals(Fto, Lto, Fti, Lti)
-    B0,B1,C0,C1  = DealsUpdate(A0, A1, Flo, Llo, Fto, Lto, Fli, Lli, Fti, Lti, Trades, Leases)
-    Fc, Lw = Allocate(B0,B1)
-    A0, A1 = StateUpdate(C0,C1,Fc,Lw)
+if __name__ == '__main__':
+    # Import Modules
+    from timer import Timer
 
-    # Debugging
-    print "Population:", 100*len(filter(lambda a: a>0, A0))/len(A0), "%"
+    # Setup Initial Agent State
+    N = 100                             # Sample Size
+    klf = 1                             # Land Worked on to Food Produced Ratio
+    kfs = 2                             # Food Consumed to Survival Ratio
+    A0 = np.random.randint(100,size=N)  # Initial Food Allocation(Random)
+    A1 = np.random.randint(100,size=N)  # Initial Land Allocation(Random)
 
-    # Environment Parameter Visualisation[Population, Assets Distribution]
-    plt.plot(A0)
-    plt.ylabel('Food Distribution')
-    plt.show()
-    
+    while(len(filter(lambda a: a>0, A0))>0):  # is anybody out there ?
+        # Bidding Round
+        Flo, Llo, Fto, Lto, Fli, Lli, Fti, Lti = Bid(A0,A1)
 
-#Leases = Deal(Flo, Llo, Fli, Lli)
-#Trades = Deal(Fto, Lto, Fti, Lti)
+        # Successful Lease Deals
+        Leases = Deals(Flo, Llo, Fli, Lli)
 
-#B0, B1 = Update(A0, A1, Fc, Lw, Flo, Llo, Fli, Lli, Fto, Lto, Fti, Lti, Trades, Leases)
-#print A0[0], A1[0], Fc[0], Lw[0], Flo[0], Llo[0], Fli[0], Lli[0], Fto[0], Lto[0], Fti[0], Lti[0]
-#print A0[1], A1[1], Fc[1], Lw[1], Flo[1], Llo[1], Fli[1], Lli[1], Fto[1], Lto[1], Fti[1], Lti[1]
-#print len(A0), len(A1), len(Fc), len(Lw), len(Flo), len(Llo), len(Fli), len(Lli), len(Fto), len(Lto), len(Fti), len(Lti)
+        # Successful Trade Deals
+        Trades = Deals(Fto, Lto, Fti, Lti)
 
+        # Updating Agent Assets based on Deals
+        B0,B1,C0,C1  = DealsUpdate(A0, A1, Flo, Llo, Fto, Lto, Fli, Lli, Fti, Lti, Trades, Leases)
 
+        # Agent Allocate Food for Consumption, Land to work on 
+        Fc, Lw = Allocate(B0,B1)
 
+        # Update System State
+        A0, A1 = StateUpdate(C0,C1,Fc,Lw)
+
+        # Debugging
+        print "Population:", 100*len(filter(lambda a: a>0, A0))/len(A0), "%"
+
+        # Environment Parameter Visualisation[Population, Assets Distribution]
+        plt.plot(A0)
+        plt.ylabel('Food Distribution')
+        plt.show()

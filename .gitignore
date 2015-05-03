@@ -2,3 +2,5 @@
 *.pyc
 .*
 !.gitignore
+timer.py
+*.lprof
