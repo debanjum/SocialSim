@@ -5,6 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from random import randrange, shuffle
 
+# Setup Initial Agent State
+N = 100                             # Sample Size
+klf = 1                             # Land Worked on to Food Produced Ratio
+kfs = 2                             # Food Consumed to Survival Ratio
+A0 = np.random.randint(100,size=N)  # Initial Food Allocation(Random)
+A1 = np.random.randint(100,size=N)  # Initial Land Allocation(Random)
+
 # Bid for trading and leasing food, land
 def Bid(A0, A1):
     if (randrange(0,1)):
@@ -55,8 +62,8 @@ def DealsUpdate(A0, A1, Flo, Llo, Fto, Lto, Fli, Lli, Fti, Lti, Trades, Leases):
     C1 = np.empty(N, dtype=int)
 
     for i in xrange(len(A0)):
-        if A0[i]>0:
-            if i<Leases[i]:
+        if A0[i]>0:               # if agent not dead
+            if i<Leases[i]:       # update only once per 2 agent transaction
                 # Asset value after lease period starts
                 B0[i] = A0[i] + Fli[i]
                 B1[i] = A1[i] + Lli[i]
@@ -75,11 +82,18 @@ def DealsUpdate(A0, A1, Flo, Llo, Fto, Lto, Fli, Lli, Fti, Lti, Trades, Leases):
                 C0[i] = A0[i]
                 C1[i] = A1[i]
 
-                if i<Trades[i]:
-                    B0[i] = B0[i] + (Fti[i]-Fto[i])
-                    B1[i] = B1[i] + (Lti[i]-Lto[i])
-                    B0[Trades[i]] = B0[Trades[i]] - (Fti[i]-Fto[i])
-                    B1[Trades[i]] = B1[Trades[i]] - (Lti[i]-Lto[i])
+            if i<Trades[i]:
+                B0[i] = B0[i] + (Fti[i]-Fto[i])
+                B1[i] = B1[i] + (Lti[i]-Lto[i])
+                B0[Trades[i]] = B0[Trades[i]] - (Fti[i]-Fto[i])
+                B1[Trades[i]] = B1[Trades[i]] - (Lti[i]-Lto[i])
+
+            else: 
+                B0[i] = A0[i]
+                B1[i] = A1[i]
+                C0[i] = A0[i]
+                C1[i] = A1[i]
+
         else:
             B0[i] = A0[i]
             B1[i] = A1[i]
