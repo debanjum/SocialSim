@@ -5,4 +5,4 @@
 timer.py
 *.lprof
 *.jpg
-
+*.prof
